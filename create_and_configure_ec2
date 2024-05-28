@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+#run terraform , we will have a preconfigured terraform config file, and will run inputs here to create the instances
+
+#here we may also create an ssh key, but we have to be able to create and retrieve from terraform.
+#lets create the local public key
+
+# =~: This operator is used to apply a regular expression pattern match.
+# ^: Indicates the start of the string.
+# [1-9]: Matches any single digit from 1 to 9.
+# $: Indicates the end of the string.
+# So, ^[1-9]$ ensures that $EC2_COUNT contains a single digit from 1 to 9.
+
+
+while true; do
+    echo "How many EC2 instances would you like to create? (1 - 10)"
+    read EC2_COUNT
+
+    if (( EC2_COUNT >= 1 && EC2_COUNT <= 5)); then
+        break
+    else
+        echo "Invalid input. Please enter a number between 1 and 10."
+    fi
+done
+
+export EC2_COUNT
+
+mkdir -p ./keys
+
+if [ ! -f ./keys/id_rsa.pub ] 
+then
+    ssh-keygen -t rsa -b 4096 -f ./keys/id_rsa -N ""
+fi
+
+cd terraform_workspace
+
+export TF_VAR_ec2_count=$EC2_COUNT
+
+terraform init -input=true
+terraform validate
+
+#afterwards, possibly from terraform we need to be able to run the plabook here to all of the 
